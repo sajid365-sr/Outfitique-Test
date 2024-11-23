@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,14 +9,36 @@ import { Home, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const redirectTimer = setTimeout(() => {
       router.push("/");
-    }, 5000); // Redirect after 5 seconds
+    }, 5000);
 
     return () => clearTimeout(redirectTimer);
   }, [router]);
+
+  if (!mounted) {
+    return null; // or a loading state
+  }
+
+  const particles = Array.from({ length: 20 }).map((_, i) => ({
+    id: i,
+    initialX:
+      Math.random() *
+      (typeof window !== "undefined" ? window.innerWidth : 1000),
+    initialY:
+      Math.random() *
+      (typeof window !== "undefined" ? window.innerHeight : 1000),
+    destinationX:
+      Math.random() *
+      (typeof window !== "undefined" ? window.innerWidth : 1000),
+    destinationY:
+      Math.random() *
+      (typeof window !== "undefined" ? window.innerHeight : 1000),
+  }));
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -28,19 +50,19 @@ export default function NotFound() {
           transition={{ duration: 1 }}
           className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_#4dd193_0%,_transparent_50%)]"
         />
-        {[...Array(20)].map((_, i) => (
+        {particles.map((particle) => (
           <motion.div
-            key={i}
+            key={particle.id}
             initial={{
               opacity: 0,
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+              x: particle.initialX,
+              y: particle.initialY,
             }}
             animate={{
               opacity: [0, 1, 0],
               scale: [0, 1, 0],
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+              x: particle.destinationX,
+              y: particle.destinationY,
             }}
             transition={{
               duration: Math.random() * 3 + 2,
