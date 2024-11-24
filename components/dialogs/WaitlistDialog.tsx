@@ -51,7 +51,7 @@ export function WaitlistDialog({ isOpen, onOpenChange }: WaitlistDialogProps) {
   return (
     <Dialog modal={true} open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
-        className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[#0D2B1D]/80 border-[#345635] text-white backdrop-blur-md overflow-hidden"
+        className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[#0D2B1D]/80 border-[#345635] text-white backdrop-blur-md overflow-hidden rounded-lg  w-[90%] lg:w-[60%] xl:w-[40%] 2xl:w-[30%]"
         onMouseMove={handleMouseMove}
       >
         <motion.div
@@ -77,7 +77,7 @@ export function WaitlistDialog({ isOpen, onOpenChange }: WaitlistDialogProps) {
             >
               {!isSubmitted ? (
                 <>
-                  <span className="block bg-gradient-to-r from-[#4dd193] to-purple-500 bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-[#4dd193] to-purple-500 bg-clip-text text-transparent text-2xl lg:text-3xl">
                     Something Extraordinary
                   </span>
                   <span className="block text-lg font-normal text-[#AEC3B0]">
