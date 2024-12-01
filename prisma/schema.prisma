@@ -65,3 +65,18 @@ model WaitlistSubscriber {
     createdAt DateTime @default(now())
     status    String   @default("pending") // pending, contacted, registered
 }
+
+model Item {
+    id         String     @id @default(cuid()) @map("_id")
+    name       String
+    category   String
+    file       String // URL of the image from Cloudinary
+    tags       String[] // Array of tags
+    attributes Attributes
+}
+
+type Attributes {
+    season   String[]
+    occasion String[]
+    color    String
+}

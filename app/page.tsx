@@ -5,7 +5,7 @@ import { HowItWorksSection } from "@/components/sections/HowItWorksSection";
 
 export default function Home() {
   return (
-    <main className=" mx-auto ">
+    <main className="mx-auto">
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />

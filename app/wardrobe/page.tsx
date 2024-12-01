@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Shirt, Watch, Trash2, Edit2, Plus, Check, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Select,
@@ -25,6 +25,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
+import axios from "axios";
+import FileUpload from "@/components/FileUpload";
+import CameraCapture from "@/components/CameraCapture";
+import WardrobeCard from "@/components/WardrobeCard";
+import { detectClothing, suggestOutfits } from "@/lib/ai";
 
 const categories = [
   {
@@ -69,6 +74,21 @@ export default function WardrobePage() {
   const [items, setItems] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [bulkEditCategory, setBulkEditCategory] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Fetch items from the database when the component mounts
+    const fetchItems = async () => {
+      try {
+        const response = await axios.get("/api/get-items");
+        setItems(response.data);
+      } catch (error) {
+        console.error("Failed to fetch items:", error);
+      }
+    };
+
+    fetchItems();
+  }, []);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -102,26 +122,56 @@ export default function WardrobePage() {
     setUploadProgress(0);
 
     try {
-      const formData = new FormData();
-      validFiles.forEach((file) => {
-        formData.append("files", file);
-      });
+      const newItems: {
+        id: string;
+        name: string;
+        category: string;
+        file: string;
+        tags: string[];
+        attributes: { season: string[]; occasion: string[]; color: string };
+      }[] = [];
 
-      // Add to items state with metadata
-      const newItems = validFiles.map((file) => ({
-        id: Math.random().toString(36),
-        name: file.name.split(".")[0],
-        category: uploadCategory,
-        file: file,
-        tags: [],
-        attributes: {
-          season: [],
-          occasion: [],
-          color: "",
-        },
-      }));
+      for (const file of validFiles) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+          const base64File = reader.result as string;
 
-      setItems((prev) => [...prev, ...newItems]);
+          // Send the file to the API route
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ file: base64File }),
+          });
+
+          const uploadResponse = await response.json();
+          if (response.ok) {
+            const newItem = {
+              id: Math.random().toString(36),
+              name: file.name.split(".")[0],
+              category: uploadCategory,
+              file: uploadResponse.url, // Use the URL returned from the API
+              tags: [],
+              attributes: {
+                season: [],
+                occasion: [],
+                color: "",
+              },
+            };
+
+            // Save to database
+            await axios.post("/api/save-item", newItem);
+            newItems.push(newItem);
+            // Fetch updated items from the database after successful upload
+            const updatedResponse = await axios.get("/api/get-items");
+            setItems(updatedResponse.data);
+          } else {
+            console.error("Upload failed:", uploadResponse.error);
+          }
+        };
+      }
     } catch (error) {
       console.error("Upload failed:", error);
     }
@@ -139,36 +189,15 @@ export default function WardrobePage() {
     if (files.length > 0) await processFiles(files);
   };
 
-  const handleCameraCapture = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      const video = document.createElement("video");
-      video.srcObject = stream;
-      await video.play();
-
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext("2d")?.drawImage(video, 0, 0);
-
-      // Convert canvas to blob
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          const file = new File([blob], `camera-capture-${Date.now()}.jpg`, {
-            type: "image/jpeg",
-          });
-          await processFiles([file]);
-        }
-
-        // Stop camera stream
-        stream.getTracks().forEach((track) => track.stop());
-      }, "image/jpeg");
-    } catch (error) {
-      console.error("Camera capture failed:", error);
-      alert(
-        "Failed to access camera. Please make sure you have granted camera permissions."
-      );
-    }
+  const handleCameraCapture = async (file: File) => {
+    const image = new Image();
+    image.src = URL.createObjectURL(file);
+    image.onload = async () => {
+      const detectedItems = await detectClothing(image);
+      const clothingNames = detectedItems.map((item) => item.class);
+      const outfitSuggestions = await suggestOutfits(clothingNames);
+      setSuggestions(outfitSuggestions);
+    };
   };
 
   const handleDelete = (itemId: string) => {
@@ -215,6 +244,19 @@ export default function WardrobePage() {
       );
     return matchesCategory && matchesSearch;
   });
+
+  const handleFilesUploaded = async (files: File[]) => {
+    for (const file of files) {
+      const image = new Image();
+      image.src = URL.createObjectURL(file);
+      image.onload = async () => {
+        const detectedItems = await detectClothing(image);
+        const clothingNames = detectedItems.map((item) => item.class);
+        const outfitSuggestions = await suggestOutfits(clothingNames);
+        setSuggestions(outfitSuggestions);
+      };
+    }
+  };
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-24 sm:mt-32">
@@ -296,7 +338,15 @@ export default function WardrobePage() {
                 Browse Files
               </Button>
               <Button
-                onClick={handleCameraCapture}
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent default button behavior
+                  // Trigger camera capture logic here
+                  // For example, you can use a file input to capture the image
+                  const fileInput = document.getElementById(
+                    "file-upload"
+                  ) as HTMLInputElement;
+                  fileInput?.click(); // Simulate click on file input
+                }}
                 className="bg-[#4dd193] hover:bg-[#3ba875] text-black mt-4"
                 disabled={!uploadCategory}
               >
@@ -474,7 +524,7 @@ export default function WardrobePage() {
                       </div>
                     </div>
                     <Image
-                      src={URL.createObjectURL(item.file)}
+                      src={item.file}
                       alt={item.name}
                       fill
                       className="object-cover"

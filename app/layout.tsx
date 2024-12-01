@@ -9,8 +9,8 @@ import { GlobalGlow } from "@/components/effects/GlobalGlow";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Wardrobe App",
-  description: "Your personal wardrobe assistant",
+  title: "Outfitique",
+  description: "Your AI wardrobe assistant",
 };
 
 export default function RootLayout({

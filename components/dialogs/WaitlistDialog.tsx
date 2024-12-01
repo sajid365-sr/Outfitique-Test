@@ -36,6 +36,13 @@ export function WaitlistDialog({ isOpen, onOpenChange }: WaitlistDialogProps) {
       setIsAlreadyRegistered(data.message === "Email already registered");
       setIsSubmitted(true);
       setEmail("");
+
+      // Send email using the new API
+      if (data.subscriber.id) {
+        await axios.post("/api/send-email", {
+          email,
+        });
+      }
     } catch (error) {
       console.error("Error submitting email:", error);
       toast({

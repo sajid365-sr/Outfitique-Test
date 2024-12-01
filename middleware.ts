@@ -12,11 +12,11 @@ export async function middleware(request: NextRequest) {
   );
 
   // Handle protected routes
-  if (isProtectedPath) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-  }
+  // if (isProtectedPath) {
+  //   if (!token) {
+  //     return NextResponse.redirect(new URL("/", request.url));
+  //   }
+  // }
 
   // Allow all other routes
   return NextResponse.next();
