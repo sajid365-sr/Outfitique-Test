@@ -29,7 +29,6 @@ import axios from "axios";
 import FileUpload from "@/components/FileUpload";
 import CameraCapture from "@/components/CameraCapture";
 import WardrobeCard from "@/components/WardrobeCard";
-import { detectClothing, suggestOutfits } from "@/lib/ai";
 
 const categories = [
   {
@@ -90,15 +89,18 @@ export default function WardrobePage() {
     fetchItems();
   }, []);
 
+  /* ====================================================================== */
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
+  /* ====================================================================== */
   const handleDragLeave = () => {
     setIsDragging(false);
   };
 
+  /* ====================================================================== */
   const processFiles = async (files: File[]) => {
     if (!uploadCategory) {
       alert("Please select a category first");
@@ -177,6 +179,7 @@ export default function WardrobePage() {
     }
   };
 
+  /* ====================================================================== */
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
@@ -184,27 +187,26 @@ export default function WardrobePage() {
     if (files.length > 0) await processFiles(files);
   };
 
+  /* ====================================================================== */
   const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) await processFiles(files);
   };
 
+  /* ====================================================================== */
   const handleCameraCapture = async (file: File) => {
-    const image = new Image();
+    const image = document.createElement("img");
     image.src = URL.createObjectURL(file);
-    image.onload = async () => {
-      const detectedItems = await detectClothing(image);
-      const clothingNames = detectedItems.map((item) => item.class);
-      const outfitSuggestions = await suggestOutfits(clothingNames);
-      setSuggestions(outfitSuggestions);
-    };
+    image.onload = async () => {};
   };
 
+  /* ====================================================================== */
   const handleDelete = (itemId: string) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
     setSelectedItems((prev) => prev.filter((id) => id !== itemId));
   };
 
+  /* ====================================================================== */
   const handleBulkDelete = () => {
     setItems((prevItems) =>
       prevItems.filter((item) => !selectedItems.includes(item.id))
@@ -212,6 +214,7 @@ export default function WardrobePage() {
     setSelectedItems([]);
   };
 
+  /* ====================================================================== */
   const handleBulkEdit = () => {
     if (!bulkEditCategory) return;
 
@@ -226,6 +229,7 @@ export default function WardrobePage() {
     setBulkEditCategory("");
   };
 
+  /* ====================================================================== */
   const toggleItemSelection = (itemId: string) => {
     setSelectedItems((prev) =>
       prev.includes(itemId)
@@ -234,6 +238,7 @@ export default function WardrobePage() {
     );
   };
 
+  /* ====================================================================== */
   const filteredItems = items.filter((item) => {
     const matchesCategory =
       selectedCategory === "All" || item.category === selectedCategory;
@@ -245,16 +250,12 @@ export default function WardrobePage() {
     return matchesCategory && matchesSearch;
   });
 
+  /* ====================================================================== */
   const handleFilesUploaded = async (files: File[]) => {
     for (const file of files) {
-      const image = new Image();
+      const image = document.createElement("img");
       image.src = URL.createObjectURL(file);
-      image.onload = async () => {
-        const detectedItems = await detectClothing(image);
-        const clothingNames = detectedItems.map((item) => item.class);
-        const outfitSuggestions = await suggestOutfits(clothingNames);
-        setSuggestions(outfitSuggestions);
-      };
+      image.onload = async () => {};
     }
   };
 

@@ -20,6 +20,7 @@ model User {
     updatedAt      DateTime  @updatedAt
     Account        Account[]
     Session        Session[]
+    items          Item[]    @relation("UserItems")
 }
 
 model Account {
@@ -73,6 +74,8 @@ model Item {
     file       String // URL of the image from Cloudinary
     tags       String[] // Array of tags
     attributes Attributes
+    userId     String
+    user       User       @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserItems")
 }
 
 type Attributes {
