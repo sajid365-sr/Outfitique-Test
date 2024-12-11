@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Shirt, Watch, Trash2, Edit2, Plus, Check, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   Select,
@@ -26,9 +26,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import axios from "axios";
-import FileUpload from "@/components/FileUpload";
-import CameraCapture from "@/components/CameraCapture";
-import WardrobeCard from "@/components/WardrobeCard";
 
 const categories = [
   {
@@ -73,7 +70,8 @@ export default function WardrobePage() {
   const [items, setItems] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [bulkEditCategory, setBulkEditCategory] = useState("");
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null); // New ref for camera input
 
   useEffect(() => {
     // Fetch items from the database when the component mounts
@@ -128,9 +126,8 @@ export default function WardrobePage() {
         id: string;
         name: string;
         category: string;
-        file: string;
+        imgUrl: string;
         tags: string[];
-        attributes: { season: string[]; occasion: string[]; color: string };
       }[] = [];
 
       for (const file of validFiles) {
@@ -154,13 +151,8 @@ export default function WardrobePage() {
               id: Math.random().toString(36),
               name: file.name.split(".")[0],
               category: uploadCategory,
-              file: uploadResponse.url, // Use the URL returned from the API
+              imgUrl: uploadResponse.url, // Use the URL returned from the API
               tags: [],
-              attributes: {
-                season: [],
-                occasion: [],
-                color: "",
-              },
             };
 
             // Save to database
@@ -194,10 +186,10 @@ export default function WardrobePage() {
   };
 
   /* ====================================================================== */
-  const handleCameraCapture = async (file: File) => {
-    const image = document.createElement("img");
-    image.src = URL.createObjectURL(file);
-    image.onload = async () => {};
+  const handleCameraCapture = () => {
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click(); // Trigger the camera input
+    }
   };
 
   /* ====================================================================== */
@@ -250,15 +242,6 @@ export default function WardrobePage() {
     return matchesCategory && matchesSearch;
   });
 
-  /* ====================================================================== */
-  const handleFilesUploaded = async (files: File[]) => {
-    for (const file of files) {
-      const image = document.createElement("img");
-      image.src = URL.createObjectURL(file);
-      image.onload = async () => {};
-    }
-  };
-
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-24 sm:mt-32">
       <section className="text-center mb-12">
@@ -293,14 +276,6 @@ export default function WardrobePage() {
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              className="bg-[#4dd193] hover:bg-[#3ba875] text-black"
-              onClick={() => document.getElementById("file-upload")?.click()}
-              disabled={!uploadCategory}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Item
-            </Button>
           </div>
         </div>
 
@@ -313,13 +288,24 @@ export default function WardrobePage() {
           onDrop={handleDrop}
         >
           <input
+            ref={fileInputRef}
             id="file-upload"
             type="file"
-            accept=".jpg,.jpeg,.png,image/*;capture=camera"
+            accept=".jpg,.jpeg,.png"
             className="hidden"
             onChange={handleFileInput}
             multiple
             aria-label="File upload input"
+          />
+          <input
+            ref={cameraInputRef}
+            id="camera-upload"
+            type="file"
+            accept="image/*;capture=camera"
+            className="hidden"
+            onChange={handleFileInput}
+            multiple
+            aria-label="Camera upload input"
           />
 
           <div className="flex flex-col items-center justify-center space-y-4">
@@ -332,22 +318,14 @@ export default function WardrobePage() {
             </div>
             <div className="flex gap-4">
               <Button
-                onClick={() => document.getElementById("file-upload")?.click()}
+                onClick={() => fileInputRef.current?.click()}
                 className="bg-[#4dd193] hover:bg-[#3ba875] text-black mt-4"
                 disabled={!uploadCategory}
               >
                 Browse Files
               </Button>
               <Button
-                onClick={(e) => {
-                  e.preventDefault(); // Prevent default button behavior
-                  // Trigger camera capture logic here
-                  // For example, you can use a file input to capture the image
-                  const fileInput = document.getElementById(
-                    "file-upload"
-                  ) as HTMLInputElement;
-                  fileInput?.click(); // Simulate click on file input
-                }}
+                onClick={handleCameraCapture}
                 className="bg-[#4dd193] hover:bg-[#3ba875] text-black mt-4"
                 disabled={!uploadCategory}
               >
@@ -525,7 +503,7 @@ export default function WardrobePage() {
                       </div>
                     </div>
                     <Image
-                      src={item.file}
+                      src={item.imgUrl}
                       alt={item.name}
                       fill
                       className="object-cover"

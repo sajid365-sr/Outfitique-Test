@@ -20,7 +20,6 @@ model User {
     updatedAt      DateTime  @updatedAt
     Account        Account[]
     Session        Session[]
-    items          Item[]    @relation("UserItems")
 }
 
 model Account {
@@ -68,18 +67,9 @@ model WaitlistSubscriber {
 }
 
 model Item {
-    id         String     @id @default(cuid()) @map("_id")
-    name       String
-    category   String
-    file       String // URL of the image from Cloudinary
-    tags       String[] // Array of tags
-    attributes Attributes
-    userId     String
-    user       User       @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserItems")
-}
-
-type Attributes {
-    season   String[]
-    occasion String[]
-    color    String
+    id       String   @id @default(cuid()) @map("_id")
+    name     String
+    category String
+    imgUrl   String // URL of the image from Cloudinary
+    tags     String[] // Array of tags
 }
