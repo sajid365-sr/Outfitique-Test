@@ -1,68 +1,66 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function SuggestionsPage() {
-  const [outfits, setOutfits] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
 
-  const fetchOutfits = async () => {
-    try {
-      const response = await axios.get("/api/get-items");
-      setOutfits(response.data);
-    } catch (error) {
-      console.error("Failed to fetch outfits:", error);
-    }
-  };
-
-  const suggestOutfits = async (clothingItems: string[]) => {
-    // Placeholder function: replace with actual logic to generate outfit suggestions
-    return clothingItems.map((item, index) => ({
-      title: `Outfit Suggestion ${index + 1}`,
-      description: `This is a suggestion based on ${item}.`,
-    }));
-  };
-
-  const generateOutfitSuggestions = async () => {
-    const clothingItems = outfits.map((item) => item.category); // Assuming category holds the type of clothing
-    const outfitSuggestions = await suggestOutfits(clothingItems);
-    setSuggestions(outfitSuggestions);
-  };
-
   useEffect(() => {
-    fetchOutfits();
+    const fetchSuggestions = async () => {
+      try {
+        const response = await axios.get("/api/suggestions"); // Adjust the API endpoint as needed
+        setSuggestions(response.data);
+      } catch (error) {
+        console.error("Failed to fetch suggestions:", error);
+      }
+    };
+
+    fetchSuggestions();
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">Outfit Suggestions</h1>
-      <Button
-        onClick={generateOutfitSuggestions}
-        className="bg-[#4dd193] hover:bg-[#3ba875] text-black"
-      >
-        Generate AI Outfit
-      </Button>
-
-      <section className="mt-6">
-        {suggestions.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {suggestions.map((suggestion, index) => (
-              <div key={index} className="bg-[#1a1a1a] p-4 rounded-lg">
-                <h3 className="text-lg font-medium text-[#4dd193]">
-                  {suggestion.title}
-                </h3>
-                <p className="text-sm text-[#AEC3B0]">
-                  {suggestion.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>No suggestions available. Please generate an outfit.</p>
-        )}
+    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-24 sm:mt-32">
+      <section className="text-center mb-12">
+        <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-[#4dd193]">
+          Outfit Suggestions
+        </h1>
+        <p className="text-[#AEC3B0] max-w-2xl mx-auto text-lg">
+          Here are some outfit suggestions based on your wardrobe.
+        </p>
       </section>
-    </div>
+
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {suggestions.map((suggestion, index) => (
+          <motion.div
+            key={suggestion.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white bg-opacity-20 backdrop-blur-lg border border-[#4dd193] rounded-lg overflow-hidden shadow-lg"
+          >
+            <img
+              src={suggestion.imgUrl}
+              alt={suggestion.name}
+              className="object-cover rounded-t-lg w-full h-48"
+            />
+            <div className="p-4">
+              <h3 className="text-lg font-medium text-[#4dd193] mb-1">
+                {suggestion.name}
+              </h3>
+              <p className="text-sm text-[#AEC3B0]">{suggestion.category}</p>
+            </div>
+          </motion.div>
+        ))}
+      </section>
+
+      <div className="text-center mt-8">
+        <Button className="bg-[#4dd193] hover:bg-[#3ba875] text-black px-8 py-4 text-lg rounded-xl">
+          Generate New Suggestions
+        </Button>
+      </div>
+    </main>
   );
 }

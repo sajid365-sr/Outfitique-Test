@@ -13,7 +13,6 @@ const navItems = [
   { name: "Wardrobe", href: "/wardrobe" },
   { name: "AI Suggestions", href: "/suggestions" },
   { name: "Pricing", href: "/pricing" }, // Updated href to a valid link
-  { name: "Outfit", href: "/outfit-detection" }, // Updated href to a valid link
 ];
 
 export default function Navbar() {

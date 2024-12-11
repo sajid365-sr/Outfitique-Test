@@ -242,6 +242,12 @@ export default function WardrobePage() {
     return matchesCategory && matchesSearch;
   });
 
+  const handleCategoryClick = (category: string, e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default behavior
+    e.stopPropagation(); // Stop the event from bubbling up
+    setSelectedCategory(category);
+  };
+
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-24 sm:mt-32">
       <section className="text-center mb-12">
@@ -368,7 +374,7 @@ export default function WardrobePage() {
           {["All", ...categories.map((cat) => cat.name)].map((category) => (
             <Button
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={(e) => handleCategoryClick(category, e)}
               variant={selectedCategory === category ? "default" : "outline"}
               className={`${
                 selectedCategory === category
@@ -479,140 +485,27 @@ export default function WardrobePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="bg-[#1a1a1a] border border-[#345635] overflow-hidden group">
-                <CardContent className="p-0">
-                  <div className="relative aspect-square">
-                    <div
-                      className="absolute top-2 left-2 z-10"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleItemSelection(item.id);
-                      }}
-                    >
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer
-                        ${
-                          selectedItems.includes(item.id)
-                            ? "bg-[#4dd193] border-[#4dd193]"
-                            : "border-white bg-transparent hover:border-[#4dd193]"
-                        }`}
-                      >
-                        {selectedItems.includes(item.id) && (
-                          <Check className="w-4 h-4 text-black" />
-                        )}
-                      </div>
-                    </div>
-                    <Image
-                      src={item.imgUrl}
-                      alt={item.name}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-white hover:bg-white/20"
-                          >
-                            <Edit2 className="w-5 h-5" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-[#1a1a1a] border border-[#345635]">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-white">
-                              Edit Category
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-[#AEC3B0]">
-                              Choose a new category for this item
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <Select
-                            onValueChange={(value) => {
-                              setItems(
-                                items.map((i) =>
-                                  i.id === item.id
-                                    ? { ...i, category: value }
-                                    : i
-                                )
-                              );
-                            }}
-                          >
-                            <SelectTrigger className="bg-[#1a1a1a] border-[#345635] text-white">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-[#1a1a1a] border-[#345635]">
-                              {categories.map((cat) => (
-                                <SelectItem
-                                  key={cat.name}
-                                  value={cat.name}
-                                  className="text-white hover:bg-[#345635]/20"
-                                >
-                                  {cat.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel className="bg-transparent text-white border-[#345635] hover:bg-[#345635]/20">
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction className="bg-[#4dd193] hover:bg-[#3ba875] text-black">
-                              Save
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-white hover:bg-white/20"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-[#1a1a1a] border border-[#345635]">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-white">
-                              Delete Item
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-[#AEC3B0]">
-                              Are you sure you want to delete this item? This
-                              action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel className="bg-transparent text-white border-[#345635] hover:bg-[#345635]/20">
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(item.id)}
-                              className="bg-red-600 hover:bg-red-700 text-white"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-lg font-medium text-[#4dd193] mb-1">
-                      {item.name}
-                    </h3>
-                    <p className="text-sm text-[#AEC3B0]">{item.category}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="bg-white bg-opacity-20 backdrop-blur-lg border border-[#4dd193] rounded-lg overflow-hidden shadow-lg">
+                <Image
+                  src={item.imgUrl}
+                  alt={item.name}
+                  width={300}
+                  height={300}
+                  className="object-cover rounded-t-lg"
+                />
+                <div className="p-4">
+                  <h3 className="text-lg font-medium text-[#4dd193] mb-1">
+                    {item.name}
+                  </h3>
+                  <p className="text-sm text-[#AEC3B0]">{item.category}</p>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
       </section>
 
-      <section className="text-center">
+      {/* <div className="text-center">
         <Link href="/suggestions">
           <Button
             className="bg-[#4dd193] hover:bg-[#3ba875] text-black px-8 py-6 text-lg rounded-xl"
@@ -621,7 +514,7 @@ export default function WardrobePage() {
             Generate Outfit Suggestions
           </Button>
         </Link>
-      </section>
+      </div> */}
     </main>
   );
 }

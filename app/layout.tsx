@@ -31,7 +31,7 @@ export default function RootLayout({
           forcedTheme="dark"
           disableTransitionOnChange
         >
-          <GlobalGlow />
+          {/* <GlobalGlow /> */}
           <Navbar />
           {children}
           <Footer />
