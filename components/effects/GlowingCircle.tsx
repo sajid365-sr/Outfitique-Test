@@ -19,7 +19,7 @@ export function GlowingCircle({
 }: GlowingCircleProps) {
   return (
     <motion.div
-      className={`absolute rounded-full bg-gradient-to-r from-purple-500 to-[#4dd193] ${blur}`}
+      className={`absolute hidden md:block rounded-full bg-gradient-to-r from-purple-500 to-[#4dd193] ${blur}`}
       style={{
         width: size,
         height: size,
